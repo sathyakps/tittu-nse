@@ -1,0 +1,78 @@
+<html>
+	<header>
+		<title>Tittu</title>
+		<script src="https://kite.trade/publisher.js?v=3"></script>
+	</header>
+	<p id="default-button"></p>
+	<script>
+		var factor = 0.05;
+		KiteConnect.ready(function() {
+			var top_5 = JSON.parse('{{top_5 | tojson}}');
+			var bottom_5 = JSON.parse('{{bottom_5| tojson}}');
+			var kite = new KiteConnect('dzqhi6yuwouus63r');
+			top_5.forEach(element => {
+				if (element.quantity > 0) {
+					kite.add({
+						tradingsymbol: element.name,
+						exchange: 'NSE',
+						transaction_type: 'BUY',
+						order_type: 'LIMIT',
+						product: 'MIS',
+						price: element['orb_high'],
+						quantity: element['quantity'],
+						variety: 'bo',
+						stoploss: element['range'],
+						squareoff: element['range'],
+						readonly: false
+					});
+					kite.add({
+						tradingsymbol: element.name,
+						exchange: 'NSE',
+						transaction_type: 'SELL',
+						order_type: 'LIMIT',
+						product: 'MIS',
+						price: element['orb_low'],
+						quantity: element['quantity'],
+						variety: 'bo',
+						stoploss: element['range'],
+						squareoff: element['range'],
+						readonly: false
+					});
+				}
+			});
+			bottom_5.forEach(element => {
+				if (element.quantity > 0) {
+					kite.add({
+						tradingsymbol: element.name,
+						exchange: 'NSE',
+						transaction_type: 'BUY',
+						order_type: 'LIMIT',
+						product: 'MIS',
+						price: element['orb_high'],
+						quantity: element['quantity'],
+						variety: 'bo',
+						stoploss: element['range'],
+						squareoff: element['range'],
+						readonly: false
+					});
+					kite.add({
+						tradingsymbol: element.name,
+						exchange: 'NSE',
+						transaction_type: 'SELL',
+						order_type: 'LIMIT',
+						product: 'MIS',
+						price: element['orb_low'],
+						quantity: element['quantity'],
+						variety: 'bo',
+						stoploss: element['range'],
+						squareoff: element['range'],
+						readonly: false
+					});
+				}
+			});
+			kite.renderButton('#default-button');
+		});
+	</script>
+</html>
+
+.

@@ -2,3 +2,5 @@ Flask
 gunicorn
 nsetools
 nsepy
+schedule
+pymongo

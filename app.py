@@ -1,5 +1,4 @@
 from flask import Flask, jsonify, Response, render_template
-from nsetools import Nse
 import nsepy
 from pprint import pprint
 from operator import itemgetter
@@ -7,7 +6,7 @@ import json
 import time
 from datetime import date
 import math
-
+from pymongo import MongoClient
 app = Flask(__name__)
 
 capital = 1000
@@ -15,6 +14,9 @@ top_10 = []
 bottom_10 = []
 best_top_5 = []
 best_bottom_5 = []
+mongo_client = MongoClient(
+    'mongodb+srv://sathya:45Xa8zKRJdEcplrd@cluster0-gvw7z.mongodb.net/test?retryWrites=true')
+db = mongo_client['tittu']
 @app.route("/")
 def hello():
     return jsonify({"top": top_10, "bottom": bottom_10})
@@ -294,11 +296,17 @@ def getgap_up():
     top_10 = all_data[-10:]
     top_10 = list(reversed(top_10))
     bottom_10 = all_data[0:10]
+    
     yield ' "top_10":' + json.dumps(top_10) + ', "bottom_10":' + json.dumps(bottom_10) + '}'
 
 
 @app.route('/get-range')
 def find_range_for_stock():
+    global db
+    db_data = db.get_collection('gap_data').find_one({"date": str(date.today())})
+    if(db_data):
+        top_10 = db_data.get('top_10')
+        bottom_10 = db_data.get('bottom_10')
     top_error_index = []
     bottom_error_index = []
     for i in range(0, len(top_10)):
@@ -364,30 +372,22 @@ def find_range_for_stock():
     global best_bottom_5,best_top_5
     best_top_5 = []
     best_bottom_5 = []
-    # top_range = 2
-    # bottom_range = 1
-    # while(len(best_top_5) < 5):
-    #     for i in top_10:
-    #         if(i['orb_ratio'] >= bottom_range and i['orb_ratio'] <= top_range):
-    #             best_top_5.append(i)
-    #             top_10.remove(i)
-    #     top_range += 0.5
-    # top_range = 2
-    # bottom_range = 1
-    # while(len(best_bottom_5) < 5):
-    #     for i in bottom_10:
-    #         if(i['orb_ratio'] >= bottom_range and i['orb_ratio'] <= top_range):
-    #             best_bottom_5.append(i)
-    #             bottom_10.remove(i)
-    #     top_range += 0.5
+
     best_top_5 = top_10[:5]
     best_bottom_5 = bottom_10[:5]
+    if(len(best_top_5) > 1):
+        db.get_collection('gap_data').update_one({"date": str(date.today())}, {"$set":{"top_5": best_top_5, "bottom_5": best_bottom_5}})
     return json.dumps({"top_5": best_top_5, "bottom_5": best_bottom_5})
 
 
 @app.route('/place')
 def place():
-    return render_template('index.html', top_5=best_top_5,bottom_5 = best_bottom_5)
+    global db
+    db_data = db.get_collection('gap_data').find_one({"date": str(date.today())})
+    if(db_data.get('top_5') and db_data.get('bottom_5')):
+        return render_template('index.html', top_5=db_data.get('top_5'),bottom_5 = db_data.get('bottom_5'))
+    else:
+        return "Trade not triggered"
 
 
 if __name__ == "__main__":

@@ -4,3 +4,4 @@ nsetools
 nsepy
 schedule
 pymongo
+dnspython

@@ -31,7 +31,7 @@
 						exchange: 'NSE',
 						transaction_type: 'SELL',
 						order_type: 'SL',
-						trigger_price: element['orb_high'] - 0.05,
+						trigger_price: element['orb_low'] - 0.05,
 						product: 'MIS',
 						price: element['orb_low'],
 						quantity: element['quantity'],
@@ -48,7 +48,8 @@
 						tradingsymbol: element.name,
 						exchange: 'NSE',
 						transaction_type: 'BUY',
-						order_type: 'LIMIT',
+						order_type: 'SL',
+						trigger_price: roundToNearestFivePaisa(element['orb_high'] + 0.05),
 						product: 'MIS',
 						price: element['orb_high'],
 						quantity: element['quantity'],
@@ -61,7 +62,8 @@
 						tradingsymbol: element.name,
 						exchange: 'NSE',
 						transaction_type: 'SELL',
-						order_type: 'LIMIT',
+						order_type: 'SL',
+						trigger_price: roundToNearestFivePaisa(element['orb_low'] - 0.05),
 						product: 'MIS',
 						price: element['orb_low'],
 						quantity: element['quantity'],
@@ -74,6 +76,10 @@
 			});
 			kite.renderButton('#default-button');
 		});
+
+		function roundToNearestFivePaisa(number) {
+			return parseFloat((Math.round(number / 0.05) * 0.05).toFixed(2));
+		}
 	</script>
 </html>
 

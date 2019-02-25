@@ -1,19 +1,20 @@
 from flask import Flask, jsonify, Response, render_template
 import nsepy
+from nsetools import Nse
 from pprint import pprint
 from operator import itemgetter
 import json
 import time
 from datetime import date
 import math
+from urllib.parse import quote
 from pymongo import MongoClient
 app = Flask(__name__)
+nse = Nse()
+
+
 
 capital = 1000
-top_10 = [] 
-bottom_10 = []
-best_top_5 = []
-best_bottom_5 = []
 mongo_client = MongoClient(
     'mongodb+srv://sathya:45Xa8zKRJdEcplrd@cluster0-gvw7z.mongodb.net/test?retryWrites=true')
 db = mongo_client['tittu']
@@ -237,7 +238,7 @@ def getgap_up():
         for symbol in all_stock_symbol:
             print('Fetching Stock ----- ' + symbol)
             try:
-                data = nsepy.get_quote(symbol)
+                data = nsepy.get_quote(quote(symbol,safe=''))
                 json_data = data
                 gap_up = round(((json_data.get(
                     'open') - json_data.get('previousClose'))/json_data.get('previousClose'))*100, 2)
@@ -264,8 +265,9 @@ def getgap_up():
             for symbol in missed_stock:
                 try:
                     time.sleep(1)
-                    data = nsepy.get_quote(symbol)
-                    json_data = json.loads(data)
+                    data = nse.get_quote(symbol)
+                    print(data)
+                    json_data = data
                     gap_up = round(((json_data.get(
                         'open') - json_data.get('previousClose'))/json_data.get('previousClose'))*100, 2)
                     temp_dict = {}
@@ -292,11 +294,11 @@ def getgap_up():
     endTime = time.time()
     print(endTime - startTime)
     all_data = sorted(all_data, key=itemgetter('gap_up_percent'))
-    global top_10, bottom_10
+    global top_10, bottom_10,db
     top_10 = all_data[-10:]
     top_10 = list(reversed(top_10))
     bottom_10 = all_data[0:10]
-    
+    db.get_collection('gap_data').replace_one({"date": str(date.today())},{ "date": str(date.today()),"top_10": top_10, "bottom_10": bottom_10},upsert=True)
     yield ' "top_10":' + json.dumps(top_10) + ', "bottom_10":' + json.dumps(bottom_10) + '}'
 
 
@@ -304,11 +306,14 @@ def getgap_up():
 def find_range_for_stock():
     global db
     db_data = db.get_collection('gap_data').find_one({"date": str(date.today())})
+    top_10=[]
+    bottom_10 = []
     if(db_data):
         top_10 = db_data.get('top_10')
         bottom_10 = db_data.get('bottom_10')
     top_error_index = []
     bottom_error_index = []
+    print(top_10)
     for i in range(0, len(top_10)):
         try:
             data = nsepy.get_quote(top_10[i]['name'])
@@ -376,7 +381,7 @@ def find_range_for_stock():
     best_top_5 = top_10[:5]
     best_bottom_5 = bottom_10[:5]
     if(len(best_top_5) > 1):
-        db.get_collection('gap_data').update_one({"date": str(date.today())}, {"$set":{"top_5": best_top_5, "bottom_5": best_bottom_5}})
+        db.get_collection('gap_data').update_one({"date": str(date.today())}, {"$set":{"top_5": best_top_5, "bottom_5": best_bottom_5}})  
     return json.dumps({"top_5": best_top_5, "bottom_5": best_bottom_5})
 
 
@@ -384,7 +389,7 @@ def find_range_for_stock():
 def place():
     global db
     db_data = db.get_collection('gap_data').find_one({"date": str(date.today())})
-    if(db_data.get('top_5') and db_data.get('bottom_5')):
+    if(db_data != None and db_data.get('top_5') and db_data.get('bottom_5')):
         return render_template('index.html', top_5=db_data.get('top_5'),bottom_5 = db_data.get('bottom_5'))
     else:
         return "Trade not triggered"

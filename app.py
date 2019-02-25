@@ -243,7 +243,7 @@ def getgap_up():
                 gap_up = round(((json_data.get(
                     'open') - json_data.get('previousClose'))/json_data.get('previousClose'))*100, 2)
                 temp_dict = {}
-                temp_dict['name'] = json_data.get('symbol')
+                temp_dict['name'] = symbol
                 temp_dict['gap_up_percent'] = gap_up
                 temp_dict['close'] = json_data.get('previousClose')
                 temp_dict['open'] = json_data.get('open')
@@ -271,7 +271,7 @@ def getgap_up():
                     gap_up = round(((json_data.get(
                         'open') - json_data.get('previousClose'))/json_data.get('previousClose'))*100, 2)
                     temp_dict = {}
-                    temp_dict['name'] = json_data.get('symbol')
+                    temp_dict['name'] = symbol
                     temp_dict['gap_up_percent'] = gap_up
                     temp_dict['close'] = json_data.get('previousClose')
                     temp_dict['open'] = json_data.get('open')
@@ -313,7 +313,6 @@ def find_range_for_stock():
         bottom_10 = db_data.get('bottom_10')
     top_error_index = []
     bottom_error_index = []
-    print(top_10)
     for i in range(0, len(top_10)):
         try:
             data = nsepy.get_quote(top_10[i]['name'])
@@ -368,6 +367,10 @@ def find_range_for_stock():
                 bottom_error_index.remove(i)
             except:
                 pass
+    print(bottom_error_index)
+    print(bottom_10)
+    print(top_error_index)
+    print(top_10)
     if(len(bottom_error_index) > 0):
         for i in bottom_error_index:
             bottom_10.remove(bottom_10[i])

@@ -377,6 +377,10 @@ def find_range_for_stock():
     if(len(top_error_index) > 0):
         for i in top_error_index:
             top_10.remove(top_10[i])
+    print(bottom_error_index)
+    print(bottom_10)
+    print(top_error_index)
+    print(top_10)
     global best_bottom_5,best_top_5
     best_top_5 = []
     best_bottom_5 = []

@@ -14,13 +14,17 @@ nse = Nse()
 
 
 
-capital = 1000
+capital = 5000
 mongo_client = MongoClient(
     'mongodb+srv://sathya:45Xa8zKRJdEcplrd@cluster0-gvw7z.mongodb.net/test?retryWrites=true')
 db = mongo_client['tittu']
 @app.route("/")
 def hello():
-    return jsonify({"top": top_10, "bottom": bottom_10})
+    db_data = db.get_collection('gap_data').find_one({"date": str(date.today())})
+    if(db_data != None):
+        return jsonify(db_data)
+    else:
+        return "Trade not Triggered"
 
 
 @app.route("/get_gapups")

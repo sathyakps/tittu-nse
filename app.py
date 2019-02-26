@@ -21,8 +21,8 @@ db = mongo_client['tittu']
 @app.route("/")
 def hello():
     db_data = db.get_collection('gap_data').find_one({"date": str(date.today())})
-    if(db_data != None):json_util
-        return json.dumps(db_data, indent=4, default=.default)
+    if(db_data != None):
+        return json.dumps(db_data, indent=4, default=json_util.default)
     else:
         return "Trade not Triggered"
 

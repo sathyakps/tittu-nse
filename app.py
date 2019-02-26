@@ -9,9 +9,9 @@ from datetime import date
 import math
 from urllib.parse import quote
 from pymongo import MongoClient
+from bson import json_util
 app = Flask(__name__)
 nse = Nse()
-
 
 
 capital = 5000
@@ -21,8 +21,8 @@ db = mongo_client['tittu']
 @app.route("/")
 def hello():
     db_data = db.get_collection('gap_data').find_one({"date": str(date.today())})
-    if(db_data != None):
-        return jsonify(db_data)
+    if(db_data != None):json_util
+        return json.dumps(db_data, indent=4, default=.default)
     else:
         return "Trade not Triggered"
 
